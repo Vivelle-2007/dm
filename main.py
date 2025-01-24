@@ -51,6 +51,5 @@ def main():
     else:
         print("Invalid choice. Please try again.")
 
-# Ensure this script runs only if executed directly
 if __name__ == "__main__":
     main()
