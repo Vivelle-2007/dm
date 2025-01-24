@@ -1,35 +1,50 @@
-import time
-from sms_sender import send_sms  # Assuming SMS sending function exists
-from db_manager import users_collection
-import requests  # For fetching weather data from an API
+import requests
+import time  # Import time module
+from sms_sender import send_sms  # Assuming the send_sms function is defined already
+from db_manager import users_collection  # Import users_collection from db_manager
 
-# Replace with your actual weather API key and endpoint
-WEATHER_API_KEY = 'your_weather_api_key'
-WEATHER_API_URL = 'https://api.openweathermap.org/data/2.5/weather'
+# OpenWeather API Key
+API_KEY = '632193275a1c59582d036295c2003b0e' 
 
-# Mock function to simulate fetching weather alerts for the given location
 def get_weather_alert(location):
-    """Fetch the weather alert for the given location."""
+    """Fetch the weather information and return an alert if conditions are severe."""
+    url = f'http://api.openweathermap.org/data/2.5/weather?q={location}&appid={632193275a1c59582d036295c2003b0e}&units=metric'
+
     try:
-        # Assuming location is a city name, or you can modify to take lat/lon
-        response = requests.get(WEATHER_API_URL, params={
-            'q': location,
-            'appid': WEATHER_API_KEY,
-            'units': 'metric'  # Optional, to get temperature in Celsius
-        })
+        response = requests.get(url)
+
         if response.status_code == 200:
-            data = response.json()
-            weather_description = data['weather'][0]['description']
-            if "storm" in weather_description or "rain" in weather_description:
-                # For simplicity, any storm or rain is considered an alert
-                alert = f"Weather Alert for {location}: {weather_description}. Stay safe!"
+            data = response.text  
+
+            if 'weather' in data:
+                start = data.index('"weather"')  # Find where the weather data starts
+                end = data.index('"main"')  # Find where the main weather type ends
+                weather_condition = data[start:end].split(":")[1].strip().replace('"', '')
+
+                start = data.index('"temp"')  # Find where the temperature data starts
+                end = data.index('"feels_like"')  # Find where the temperature data ends
+                temperature = float(data[start:end].split(":")[1].strip())
+
+                # Check for weather conditions that may indicate a disaster or extreme weather
+                alert = None
+                if weather_condition in ['Thunderstorm', 'Drizzle', 'Rain', 'Snow', 'Mist']:
+                    alert = f"ALERT: Severe weather warning! Current conditions: {weather_condition}, Temperature: {temperature}°C"
+                elif temperature > 40:
+                    alert = f"ALERT: Extreme heat warning! Current temperature: {temperature}°C"
+                elif temperature < 0:
+                    alert = f"ALERT: Freezing temperatures! Current temperature: {temperature}°C"
+
                 return alert
+
+            else:
+                return "Weather information is unavailable."
+
         else:
-            print("Error fetching weather data.")
-            return None
+            return "Could not fetch weather data. Please try again later."
+
     except Exception as e:
-        print(f"Error fetching weather alert: {e}")
-        return None
+        return f"Error: {str(e)}"
+
 
 def start_monitoring(phone):
     """Start disaster monitoring for a specific user."""
@@ -42,8 +57,8 @@ def start_monitoring(phone):
     print(f"Monitoring started for {phone} in {location}.")
 
     while True:
-        alert = get_weather_alert(location)
+        alert = get_weather_alert(location)  # Fetch weather alert
         if alert:
-            send_sms(phone, alert)
+            send_sms(phone, alert)  # Send alert via SMS
             print(f"Alert sent to {phone}: {alert}")
         time.sleep(60)  # Check every minute
