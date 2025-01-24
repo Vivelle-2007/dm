@@ -1,17 +1,14 @@
 from db_manager import register_user, activate_user
-from weather_notifier import start_monitoring  # Your disaster monitoring function
+from weather_notifier import start_monitoring 
 import re
 
-# Function to validate phone number (basic validation)
 def validate_phone_number(phone):
-    # Check if phone number is numeric and exactly 10 digits long
     if phone.isdigit() and len(phone) == 10:
         return True
     else:
         print("Invalid phone number. It should be 10 digits.")
         return False
 
-# Function to validate location (non-empty string)
 def validate_location(location):
     if location.strip():
         return True
@@ -29,11 +26,11 @@ def main():
     if choice == "1":
         phone = input("Enter your phone number: ")
         if not validate_phone_number(phone):
-            return  # Exit if phone number is invalid
+            return  
 
         location = input("Enter your location: ")
         if not validate_location(location):
-            return  # Exit if location is invalid
+            return  
 
         token = register_user(phone, location)
         print(f"Registration successful! Your activation token is: {token}")
