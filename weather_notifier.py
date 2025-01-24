@@ -1,9 +1,9 @@
 import requests
-import time  # Import time module
-from sms_sender import send_sms  # Assuming the send_sms function is defined already
-from db_manager import users_collection  # Import users_collection from db_manager
+import time  
+from sms_sender import send_sms  
+from db_manager import users_collection 
 
-# OpenWeather API Key
+
 API_KEY = '632193275a1c59582d036295c2003b0e' 
 
 def get_weather_alert(location):
@@ -17,15 +17,15 @@ def get_weather_alert(location):
             data = response.text  
 
             if 'weather' in data:
-                start = data.index('"weather"')  # Find where the weather data starts
-                end = data.index('"main"')  # Find where the main weather type ends
+                start = data.index('"weather"')  
+                end = data.index('"main"')  
                 weather_condition = data[start:end].split(":")[1].strip().replace('"', '')
 
-                start = data.index('"temp"')  # Find where the temperature data starts
-                end = data.index('"feels_like"')  # Find where the temperature data ends
+                start = data.index('"temp"')  
+                end = data.index('"feels_like"')  
                 temperature = float(data[start:end].split(":")[1].strip())
 
-                # Check for weather conditions that may indicate a disaster or extreme weather
+              
                 alert = None
                 if weather_condition in ['Thunderstorm', 'Drizzle', 'Rain', 'Snow', 'Mist']:
                     alert = f"ALERT: Severe weather warning! Current conditions: {weather_condition}, Temperature: {temperature}°C"
@@ -57,8 +57,8 @@ def start_monitoring(phone):
     print(f"Monitoring started for {phone} in {location}.")
 
     while True:
-        alert = get_weather_alert(location)  # Fetch weather alert
+        alert = get_weather_alert(location)  
         if alert:
-            send_sms(phone, alert)  # Send alert via SMS
+            send_sms(phone, alert)  
             print(f"Alert sent to {phone}: {alert}")
-        time.sleep(60)  # Check every minute
+        time.sleep(60)  
